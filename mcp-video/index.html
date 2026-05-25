@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      background: #080c16;
+      font-family: "Space Grotesk", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .scene {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+
+    #scene1 { z-index: 1; }
+    #scene2 { z-index: 2; opacity: 0; }
+    #scene3 { z-index: 3; opacity: 0; }
+
+    /* Grid background - shared */
+    .grid-layer {
+      position: absolute;
+      top: 0; left: 0;
+      width: 1920px; height: 1080px;
+      background-image:
+        repeating-linear-gradient(0deg, rgba(94,140,240,0.04) 0px, rgba(94,140,240,0.04) 1px, transparent 1px, transparent 80px),
+        repeating-linear-gradient(90deg, rgba(94,140,240,0.04) 0px, rgba(94,140,240,0.04) 1px, transparent 1px, transparent 80px),
+        repeating-linear-gradient(0deg, rgba(94,140,240,0.08) 0px, rgba(94,140,240,0.08) 1px, transparent 1px, transparent 240px),
+        repeating-linear-gradient(90deg, rgba(94,140,240,0.08) 0px, rgba(94,140,240,0.08) 1px, transparent 1px, transparent 240px);
+    }
+
+    /* Radial glow */
+    .glow {
+      position: absolute;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(94,140,240,0.14) 0%, rgba(94,140,240,0.04) 40%, rgba(94,140,240,0) 70%);
+    }
+
+    /* Scene 1 - Title */
+    .s1-content {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      padding: 0 180px;
+      box-sizing: border-box;
+    }
+
+    .s1-eyebrow {
+      font-family: "Space Grotesk", sans-serif;
+      font-weight: 400;
+      font-size: 22px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(148,190,255,0.92);
+      margin-bottom: 32px;
+    }
+
+    .s1-title {
+      font-family: "DM Serif Display", serif;
+      font-weight: 400;
+      font-size: 200px;
+      line-height: 1;
+      color: #e6eaf2;
+      letter-spacing: -0.02em;
+      margin-bottom: 20px;
+    }
+
+    .s1-subtitle {
+      font-family: "Space Grotesk", sans-serif;
+      font-weight: 300;
+      font-size: 42px;
+      color: rgba(230,234,242,0.7);
+      letter-spacing: 0.01em;
+    }
+
+    .s1-accent-line {
+      width: 120px;
+      height: 3px;
+      background: #8b5cf0;
+      margin-top: 48px;
+      border-radius: 1px;
+    }
+
+    .s1-meta {
+      position: absolute;
+      bottom: 80px;
+      left: 180px;
+      font-family: "Space Grotesk", sans-serif;
+      font-weight: 300;
+      font-size: 18px;
+      color: rgba(230,234,242,0.48);
+      letter-spacing: 0.05em;
+    }
+
+    .s1-grid-dot {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: rgba(94,140,240,0.5);
+    }
+
+    /* Scene 2 - Architecture */
+    .s2-content {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      height: 100%;
+      padding: 100px 160px;
+      box-sizing: border-box;
+    }
+
+    .s2-section-label {
+      font-family: "Space Grotesk", sans-serif;
+      font-weight: 400;
+      font-size: 20px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(148,195,255,0.88);
+      margin-bottom: 80px;
+    }
+
+    .s2-diagram {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      flex: 1;
+      position: relative;
+    }
+
+    .s2-node {
+      width: 320px;
+      height: 280px;
+      border: 2px solid rgba(230,234,242,0.12);
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      background: rgba(8,12,22,0.6);
+    }
+
+    .s2-node-highlight {
+      border-color: rgba(94,140,240,0.4);
+      background: rgba(94,140,240,0.06);
+      box-shadow: 0 0 60px rgba(94,140,240,0.08);
+    }
+
+    .s2-node-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 24px;
+      font-size: 24px;
+    }
+
+    .s2-node-title {
+      font-family: "Space Grotesk", sans-serif;
+      font-weight: 500;
+      font-size: 32px;
+      color: #e6eaf2;
+      margin-bottom: 10px;
+      letter-spacing: -0.01em;
+    }
+
+    .s2-node-desc {
+      font-family: "Space Grotesk", sans-serif;
+      font-weight: 300;
+      font-size: 17px;
+      color: rgba(230,234,242,0.5);
+      text-align: center;
+      max-width: 220px;
+      line-height: 1.4;
+    }
+
+    .s2-connector {
+      position: relative;
+      width: 100px;
+      height: 3px;
+      background: rgba(94,140,240,0.2);
+      border-radius: 1px;
+    }
+
+    .s2-connector-dot {
+      position: absolute;
+      top: -5px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #5e8cf0;
+      opacity: 0.8;
+      box-shadow: 0 0 12px rgba(94,140,240,0.5);
+    }
+
+    .s2-transport-label {
+      font-family: "Space Grotesk", sans-serif;
+      font-weight: 400;
+      font-size: 14px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: rgba(148,195,255,0.68);
+    }
+
+    .s2-badges {
+      display: flex;
+      gap: 32px;
+      justify-content: center;
+      margin-top: 60px;
+    }
+
+    .s2-badge {
+      padding: 14px 36px;
+      border: 1.5px solid rgba(230,234,242,0.1);
+      border-radius: 8px;
+      font-family: "Space Grotesk", sans-serif;
+      font-weight: 400;
+      font-size: 18px;
+      color: rgba(230,234,242,0.6);
+      letter-spacing: 0.02em;
+    }
+
+    /* Scene 3 - Closing */
+    .s3-content {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-start;
+      width: 100%;
+      height: 100%;
+      padding: 0 200px;
+      box-sizing: border-box;
+    }
+
+    .s3-line1 {
+      font-family: "DM Serif Display", serif;
+      font-weight: 400;
+      font-size: 130px;
+      color: #e6eaf2;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+    }
+
+    .s3-line2 {
+      font-family: "DM Serif Display", serif;
+      font-weight: 400;
+      font-size: 130px;
+      color: #8b5cf0;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+    }
+
+    .s3-accent-line {
+      width: 100px;
+      height: 3px;
+      background: #5e8cf0;
+      margin-top: 40px;
+      border-radius: 1px;
+    }
+
+    .s3-meta {
+      position: absolute;
+      bottom: 80px;
+      left: 200px;
+      font-family: "Space Grotesk", sans-serif;
+      font-weight: 300;
+      font-size: 18px;
+      color: rgba(230,234,242,0.52);
+      letter-spacing: 0.05em;
+    }
+
+    /* Decorative: code bracket accent */
+    .code-accent {
+      position: absolute;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 160px;
+      font-weight: 200;
+      color: rgba(94,140,240,0.08);
+      line-height: 1;
+    }
+
+    /* Arrow heads for connectors */
+    .arrow-right {
+      width: 0; height: 0;
+      border-top: 8px solid transparent;
+      border-bottom: 8px solid transparent;
+      border-left: 14px solid rgba(94,140,240,0.3);
+      position: absolute;
+      right: -14px;
+      top: -6px;
+    }
+
+    .arrow-left {
+      width: 0; height: 0;
+      border-top: 8px solid transparent;
+      border-bottom: 8px solid transparent;
+      border-right: 14px solid rgba(94,140,240,0.3);
+      position: absolute;
+      left: -14px;
+      top: -6px;
+    }
+  </style>
+</head>
+<body>
+  <div id="root" data-composition-id="mcp-explainer" data-width="1920" data-height="1080" data-start="0" data-duration="10">
+    <!-- SCENE 1 — Title (0-2.5s) -->
+    <div id="scene1" class="scene">
+      <div class="grid-layer"></div>
+      <div class="glow" style="width:700px;height:700px;top:-80px;right:60px;" data-layout-allow-overflow></div>
+      <div class="glow" style="width:400px;height:400px;bottom:40px;left:120px;background:radial-gradient(circle,rgba(139,92,240,0.1) 0%,rgba(139,92,240,0.03) 40%,rgba(139,92,240,0) 70%);" data-layout-allow-overflow></div>
+
+      <div class="code-accent" style="top:60px;left:60px;" data-layout-ignore>{</div>
+      <div class="code-accent" style="bottom:60px;right:60px;" data-layout-ignore>}</div>
+
+      <div id="s1-dot1" class="s1-grid-dot" style="top:240px;left:480px;"></div>
+      <div id="s1-dot2" class="s1-grid-dot" style="top:800px;right:560px;"></div>
+      <div id="s1-dot3" class="s1-grid-dot" style="top:480px;left:1440px;"></div>
+
+      <div class="s1-content">
+        <div id="s1-eyebrow" class="s1-eyebrow">Open Protocol</div>
+        <div id="s1-title" class="s1-title">MCP</div>
+        <div id="s1-subtitle" class="s1-subtitle">Model Context Protocol</div>
+        <div id="s1-line" class="s1-accent-line"></div>
+      </div>
+      <div id="s1-meta" class="s1-meta">Anthropic . Open Standard . AI-Native</div>
+    </div>
+
+    <!-- SCENE 2 — Architecture Diagram (2.5-7.0s) -->
+    <div id="scene2" class="scene">
+      <div class="grid-layer"></div>
+      <div class="glow" style="width:900px;height:900px;top:50%;left:50%;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(94,140,240,0.08) 0%,rgba(94,140,240,0.03) 50%,rgba(94,140,240,0) 75%);"></div>
+
+      <div id="s2-deco-lt" class="code-accent" style="top:40px;left:40px;font-size:100px;" data-layout-ignore>&lt;</div>
+      <div id="s2-deco-gt" class="code-accent" style="bottom:40px;right:40px;font-size:100px;" data-layout-ignore>/&gt;</div>
+
+      <div class="s2-content">
+        <div id="s2-label" class="s2-section-label">How It Works</div>
+        <div class="s2-diagram">
+          <!-- Host Node -->
+          <div id="s2-node1" class="s2-node" style="z-index:2;">
+            <div class="s2-node-icon" style="background:rgba(94,140,240,0.12);" data-layout-ignore>🖥</div>
+            <div class="s2-node-title">Host</div>
+            <div class="s2-node-desc">AI Application<br/>Claude Desktop, IDE</div>
+          </div>
+
+          <!-- Connector 1: Host → Server -->
+          <div id="s2-conn1" class="s2-connector" style="position:relative;">
+            <div id="s2-dot-r1" class="s2-connector-dot" style="left:0;"></div>
+            <div id="s2-dot-r2" class="s2-connector-dot" style="left:0;"></div>
+            <div class="arrow-right"></div>
+          </div>
+
+          <!-- MCP Server Node (highlighted) -->
+          <div id="s2-node2" class="s2-node s2-node-highlight">
+            <div class="s2-node-icon" style="background:rgba(94,140,240,0.18);" data-layout-ignore>⚡</div>
+            <div class="s2-node-title">MCP Server</div>
+            <div class="s2-node-desc">Protocol Layer<br/>JSON-RPC 2.0</div>
+          </div>
+
+          <!-- Connector 2: Server → Tools -->
+          <div id="s2-conn2" class="s2-connector" style="position:relative;">
+            <div id="s2-dot-r3" class="s2-connector-dot" style="left:0;"></div>
+            <div id="s2-dot-r4" class="s2-connector-dot" style="left:0;"></div>
+            <div class="arrow-right"></div>
+          </div>
+
+          <!-- Tools Node -->
+          <div id="s2-node3" class="s2-node">
+            <div class="s2-node-icon" style="background:rgba(139,92,240,0.12);" data-layout-ignore>🔌</div>
+            <div class="s2-node-title">Tools & Data</div>
+            <div class="s2-node-desc">External Resources<br/>APIs, DB, Files</div>
+          </div>
+        </div>
+
+        <!-- Transport labels -->
+        <div style="display:flex;justify-content:center;gap:420px;margin-top:-20px;position:relative;z-index:1;">
+          <div id="s2-tlabel1" class="s2-transport-label">stdio / SSE</div>
+          <div id="s2-tlabel2" class="s2-transport-label">JSON-RPC</div>
+        </div>
+
+        <!-- Function type badges -->
+        <div class="s2-badges">
+          <div id="s2-badge1" class="s2-badge">Tools</div>
+          <div id="s2-badge2" class="s2-badge">Resources</div>
+          <div id="s2-badge3" class="s2-badge">Prompts</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENE 3 — Closing (7.0-10.0s) -->
+    <div id="scene3" class="scene">
+      <div class="grid-layer"></div>
+      <div class="glow" style="width:600px;height:600px;top:50%;left:60%;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(139,92,240,0.12) 0%,rgba(139,92,240,0.03) 45%,rgba(139,92,240,0) 75%);"></div>
+
+      <div class="s3-content">
+        <div id="s3-line1" class="s3-line1">One Protocol,</div>
+        <div id="s3-line2" class="s3-line2">Any Tool.</div>
+        <div id="s3-accent" class="s3-accent-line"></div>
+      </div>
+      <div id="s3-meta" class="s3-meta">Model Context Protocol . Standardized AI Integration</div>
+    </div>
+
+  </div>
+
+  <script>
+    window.__timelines = window.__timelines || {};
+    var tl = gsap.timeline({ paused: true });
+
+    // ============================================================
+    // SCENE 1 — Title (0–2.5s)
+    // ============================================================
+
+    // Ambient: glow breathing
+    tl.fromTo("#scene1 .glow", { scale: 0.92 }, { scale: 1.0, duration: 8, ease: "sine.inOut", yoyo: true, repeat: 4 }, 0.2);
+    // Grid dots pulse
+    tl.fromTo("#s1-dot1", { scale: 0.6, opacity: 0.3 }, { scale: 1.3, opacity: 0.9, duration: 1.5, ease: "sine.inOut", yoyo: true, repeat: 1 }, 0.3);
+    tl.fromTo("#s1-dot2", { scale: 0.5, opacity: 0.2 }, { scale: 1.4, opacity: 0.8, duration: 1.8, ease: "sine.inOut", yoyo: true, repeat: 1 }, 0.6);
+    tl.fromTo("#s1-dot3", { scale: 0.7, opacity: 0.3 }, { scale: 1.2, opacity: 0.7, duration: 2.0, ease: "sine.inOut", yoyo: true, repeat: 1 }, 0.2);
+
+    // Code bracket decor
+    tl.fromTo("#scene1 .code-accent", { opacity: 0 }, { opacity: 1, duration: 1.2, ease: "power2.out" }, 0.1);
+
+    // Eyebrow: types on from left
+    tl.fromTo("#s1-eyebrow", { x: -30, opacity: 0 }, { x: 0, opacity: 1, duration: 0.45, ease: "power3.out" }, 0.15);
+
+    // Main title: SLAMS in
+    tl.fromTo("#s1-title", { y: 80, scale: 0.85, opacity: 0 }, { y: 0, scale: 1, opacity: 1, duration: 0.65, ease: "expo.out" }, 0.4);
+
+    // Subtitle: slides up gently
+    tl.fromTo("#s1-subtitle", { y: 25, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 0.75);
+
+    // Accent line: draws from left
+    tl.fromTo("#s1-line", { scaleX: 0, opacity: 0 }, { scaleX: 1, opacity: 1, duration: 0.5, ease: "power3.out" }, 0.9);
+
+    // Meta label
+    tl.fromTo("#s1-meta", { y: 10, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: "power1.out" }, 1.1);
+
+    // ============================================================
+    // TRANSITION 1: Scene 1 → Scene 2 (blur crossfade, 2.3–2.8s)
+    // ============================================================
+    var T1 = 2.3;
+    tl.to("#scene1", { filter: "blur(10px)", scale: 1.03, opacity: 0, duration: 0.5, ease: "power2.inOut" }, T1);
+    tl.fromTo("#scene2",
+      { filter: "blur(10px)", scale: 0.97, opacity: 0 },
+      { filter: "blur(0px)", scale: 1, opacity: 1, duration: 0.5, ease: "power2.inOut" }, T1 + 0.1);
+
+    // Visibility cleanup
+    tl.set("#scene1", { opacity: 0, visibility: "hidden" }, T1 + 0.55);
+
+    // ============================================================
+    // SCENE 2 — Architecture Diagram (2.5–7.0s entrances)
+    // ============================================================
+
+    var S2 = 2.5;
+
+    // Ambient glow pulse
+    tl.fromTo("#scene2 .glow", { scale: 0.88 }, { scale: 1.05, duration: 6, ease: "sine.inOut", yoyo: true, repeat: 3 }, S2 + 0.1);
+
+    // Code decor
+    tl.fromTo("#s2-deco-lt", { opacity: 0, y: -10 }, { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }, S2 + 0.1);
+    tl.fromTo("#s2-deco-gt", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }, S2 + 0.3);
+
+    // Section label
+    tl.fromTo("#s2-label", { x: -30, opacity: 0 }, { x: 0, opacity: 1, duration: 0.4, ease: "power3.out" }, S2 + 0.15);
+
+    // Node 1 (Host) — slides in from left
+    tl.fromTo("#s2-node1", { x: -60, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, ease: "expo.out" }, S2 + 0.35);
+
+    // Node 2 (MCP Server) — scales up (center, highlighted)
+    tl.fromTo("#s2-node2", { scale: 0.8, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.4)" }, S2 + 0.5);
+
+    // Node 3 (Tools) — slides in from right
+    tl.fromTo("#s2-node3", { x: 60, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, ease: "expo.out" }, S2 + 0.4);
+
+    // Connectors — draw from center outward
+    tl.fromTo("#s2-conn1", { scaleX: 0, opacity: 0, transformOrigin: "right center" }, { scaleX: 1, opacity: 1, duration: 0.4, ease: "power2.out" }, S2 + 0.65);
+
+    tl.fromTo("#s2-conn2", { scaleX: 0, opacity: 0, transformOrigin: "left center" }, { scaleX: 1, opacity: 1, duration: 0.4, ease: "power2.out" }, S2 + 0.7);
+
+    // Transport labels
+    tl.fromTo("#s2-tlabel1", { y: 8, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35, ease: "power1.out" }, S2 + 0.85);
+    tl.fromTo("#s2-tlabel2", { y: 8, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35, ease: "power1.out" }, S2 + 0.9);
+
+    // Data flow particles on connector 1 (Host → Server)
+    var dotCycle = 1.8;
+    var dotRepeat1 = Math.floor(4.5 / dotCycle) - 1; // = 1
+    tl.fromTo("#s2-dot-r1", { x: 0, opacity: 0 }, { x: 88, opacity: [0, 0.9, 0.9, 0], duration: dotCycle, ease: "sine.inOut", repeat: dotRepeat1 }, S2 + 0.8);
+    tl.fromTo("#s2-dot-r2", { x: 0, opacity: 0 }, { x: 88, opacity: [0, 0.9, 0.9, 0], duration: dotCycle, ease: "sine.inOut", repeat: dotRepeat1 }, S2 + 1.7);
+
+    // Data flow particles on connector 2 (Server → Tools)
+    var dotRepeat2 = Math.floor(4.3 / dotCycle) - 1; // = 1
+    tl.fromTo("#s2-dot-r3", { x: 0, opacity: 0 }, { x: 88, opacity: [0, 0.9, 0.9, 0], duration: dotCycle, ease: "sine.inOut", repeat: dotRepeat2 }, S2 + 1.0);
+    tl.fromTo("#s2-dot-r4", { x: 0, opacity: 0 }, { x: 88, opacity: [0, 0.9, 0.9, 0], duration: dotCycle, ease: "sine.inOut", repeat: dotRepeat2 }, S2 + 1.9);
+
+    // Badges — cascade in
+    tl.fromTo("#s2-badge1", { y: 20, scale: 0.9, opacity: 0 }, { y: 0, scale: 1, opacity: 1, duration: 0.4, ease: "power3.out" }, S2 + 1.2);
+    tl.fromTo("#s2-badge2", { y: 20, scale: 0.9, opacity: 0 }, { y: 0, scale: 1, opacity: 1, duration: 0.4, ease: "power2.out" }, S2 + 1.35);
+    tl.fromTo("#s2-badge3", { y: 20, scale: 0.9, opacity: 0 }, { y: 0, scale: 1, opacity: 1, duration: 0.4, ease: "power1.out" }, S2 + 1.5);
+
+    // Badge hover pulse (highlight Tools)
+    tl.fromTo("#s2-badge1", { borderColor: "rgba(230,234,242,0.1)" }, { borderColor: "rgba(94,140,240,0.5)", duration: 1.5, ease: "sine.inOut", yoyo: true, repeat: 1 }, S2 + 2.5);
+
+    // ============================================================
+    // TRANSITION 2: Scene 2 → Scene 3 (blur crossfade, 6.8–7.3s)
+    // ============================================================
+    var T2 = 6.8;
+    tl.to("#scene2", { filter: "blur(10px)", scale: 1.03, opacity: 0, duration: 0.5, ease: "power2.inOut" }, T2);
+    tl.fromTo("#scene3",
+      { filter: "blur(10px)", scale: 0.97, opacity: 0 },
+      { filter: "blur(0px)", scale: 1, opacity: 1, duration: 0.5, ease: "power2.inOut" }, T2 + 0.1);
+
+    tl.set("#scene2", { opacity: 0, visibility: "hidden" }, T2 + 0.55);
+
+    // ============================================================
+    // SCENE 3 — Closing (7.0–10.0s)
+    // ============================================================
+
+    var S3 = 7.0;
+
+    // Ambient glow
+    tl.fromTo("#scene3 .glow", { scale: 0.85 }, { scale: 1.1, duration: 5, ease: "sine.inOut", yoyo: true, repeat: 2 }, S3 + 0.1);
+
+    // Line 1: slides from left
+    tl.fromTo("#s3-line1", { x: -50, opacity: 0 }, { x: 0, opacity: 1, duration: 0.6, ease: "expo.out" }, S3 + 0.2);
+
+    // Line 2: slides from left, staggered
+    tl.fromTo("#s3-line2", { x: -40, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, S3 + 0.55);
+
+    // Accent line
+    tl.fromTo("#s3-accent", { scaleX: 0, opacity: 0 }, { scaleX: 1, opacity: 1, duration: 0.45, ease: "power3.out" }, S3 + 0.7);
+
+    // Meta
+    tl.fromTo("#s3-meta", { y: 10, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35, ease: "power1.out" }, S3 + 0.85);
+
+    // ============================================================
+    // FINAL SCENE — Fade out (9.2–10.0s)
+    // ============================================================
+    tl.to("#scene3", { filter: "blur(12px)", scale: 1.04, opacity: 0, duration: 0.7, ease: "power2.in" }, 9.3);
+    tl.set("#scene3", { opacity: 0, visibility: "hidden" }, 10.0);
+
+    // Register timeline
+    window.__timelines["mcp-explainer"] = tl;
+  </script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+# Claude Code internal
+.agents/
+.claude/
+.playwright-mcp/
+skills-lock.json
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# OS
+.DS_Store
+Thumbs.db
